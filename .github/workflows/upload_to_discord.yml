@@ -54,6 +54,7 @@ jobs:
           RESPONSE=$(curl -s -X POST "${DISCORD_WEBHOOK_NEWS}?wait=true" \
             -H "Content-Type: application/json" \
             -d "{
+              \"content\": \"<@&1509832066123173950>\",
               \"embeds\": [{
                 \"title\": \"✅ Bongo Cat 自動領取 已更新完成！\",
                 \"description\": \"📅 **更新日期：${DATE}**\n\n已推送最新版本，請至 bongocat自動領取 頻道下載最新 DLL 覆蓋舊版本。\",

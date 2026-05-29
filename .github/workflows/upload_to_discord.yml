@@ -2,22 +2,73 @@ name: 🚀 自動推送實體檔案到 Discord
 
 on:
   push:
+    branches: [main]
     paths:
       - '**.dll'
       - '**.pdb'
+  workflow_dispatch:
 
 jobs:
   upload-files:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: 📥 下載最新程式碼
         uses: actions/checkout@v4
 
-      - name: 📤 直接上傳實體檔案到 Discord
+      - name: 🗑️ 刪除舊的檔案訊息
+        if: hashFiles('.last_file_msg_id') != ''
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -F "payload_json={\"content\":\"📦 **Bongo Cat 最新版自動領取腳本來囉！**\n直接點擊下方檔案下載覆蓋即可 👇\"}" \
-               -F "file1=@Assembly-CSharp.dll" \
-               -F "file2=@Assembly-CSharp.pdb" \
-               $DISCORD_WEBHOOK
+          OLD_ID=$(cat .last_file_msg_id)
+          curl -s -X DELETE "${DISCORD_WEBHOOK}/messages/${OLD_ID}"
+
+      - name: 📤 上傳最新檔案到 bongocat自動領取
+        id: send_file
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          RESPONSE=$(curl -s -X POST "${DISCORD_WEBHOOK}?wait=true" \
+            -F "payload_json={\"content\":\"📦 **Bongo Cat 最新版自動領取腳本來囉！**\n直接點擊下方檔案下載覆蓋即可 👇\"}" \
+            -F "file1=@Assembly-CSharp.dll" \
+            -F "file2=@Assembly-CSharp.pdb")
+          echo "msg_id=$(echo "$RESPONSE" | jq -r '.id')" >> $GITHUB_OUTPUT
+
+      - name: 🗑️ 刪除舊的更新資訊訊息
+        if: hashFiles('.last_news_msg_id') != ''
+        env:
+          DISCORD_WEBHOOK_NEWS: ${{ secrets.DISCORD_WEBHOOK_NEWS }}
+        run: |
+          OLD_ID=$(cat .last_news_msg_id)
+          curl -s -X DELETE "${DISCORD_WEBHOOK_NEWS}/messages/${OLD_ID}"
+
+      - name: 📢 發送更新資訊
+        id: send_news
+        env:
+          DISCORD_WEBHOOK_NEWS: ${{ secrets.DISCORD_WEBHOOK_NEWS }}
+        run: |
+          DATE=$(TZ='Asia/Taipei' date '+%Y/%m/%d')
+          RESPONSE=$(curl -s -X POST "${DISCORD_WEBHOOK_NEWS}?wait=true" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"✅ Bongo Cat 自動領取 已更新完成！\",
+                \"description\": \"📅 **更新日期：${DATE}**\n\n已推送最新版本，請至 bongocat自動領取 頻道下載最新 DLL 覆蓋舊版本。\",
+                \"color\": 15548997,
+                \"footer\": {\"text\": \"峽灣邊的小木屋 · 自動更新通知\"}
+              }]
+            }")
+          echo "msg_id=$(echo "$RESPONSE" | jq -r '.id')" >> $GITHUB_OUTPUT
+
+      - name: 💾 儲存訊息 ID
+        run: |
+          echo "${{ steps.send_file.outputs.msg_id }}" > .last_file_msg_id
+          echo "${{ steps.send_news.outputs.msg_id }}" > .last_news_msg_id
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .last_file_msg_id .last_news_msg_id
+          git diff --staged --quiet || git commit -m "chore: update Discord message IDs"
+          git push

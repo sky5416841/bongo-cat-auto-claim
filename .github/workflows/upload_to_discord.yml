@@ -1,0 +1,23 @@
+name: 🚀 自動推送實體檔案到 Discord
+
+on:
+  push:
+    paths:
+      - '**.dll'
+      - '**.pdb'
+
+jobs:
+  upload-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 下載最新程式碼
+        uses: actions/checkout@v4
+
+      - name: 📤 直接上傳實體檔案到 Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -F "payload_json={\"content\":\"📦 **Bongo Cat 最新版自動領取腳本來囉！**\n直接點擊下方檔案下載覆蓋即可 👇\"}" \
+               -F "file1=@Assembly-CSharp.dll" \
+               -F "file2=@Assembly-CSharp.pdb" \
+               $DISCORD_WEBHOOK

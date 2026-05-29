@@ -66,7 +66,7 @@ jobs:
                 \"title\": \"✅ Bongo Cat 自動領取 已更新完成！\",
                 \"description\": \"📅 **更新日期：${DATE}**\n\n已推送最新版本，請至 bongocat自動領取 頻道下載最新 DLL 覆蓋舊版本。\",
                 \"color\": 15548997,
-                \"footer\": {\"text\": \"峽灣邊的小木屋 · 自動更新通知\"}
+                \"footer\": {\"text\": \"狐狸先生的小木屋 · 自動更新通知\"}
               }]
             }")
           echo "msg_id=$(echo "$RESPONSE" | jq -r '.id')" >> $GITHUB_OUTPUT

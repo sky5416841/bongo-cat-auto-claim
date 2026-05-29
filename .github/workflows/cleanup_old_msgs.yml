@@ -1,0 +1,20 @@
+name: 🧹 一次性清除舊訊息
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🗑️ 刪除 bongocat自動領取 舊訊息
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -s -X DELETE "${DISCORD_WEBHOOK}/messages/1510028721573335050"
+
+      - name: 🗑️ 刪除 更新資訊 舊訊息
+        env:
+          DISCORD_WEBHOOK_NEWS: ${{ secrets.DISCORD_WEBHOOK_NEWS }}
+        run: |
+          curl -s -X DELETE "${DISCORD_WEBHOOK_NEWS}/messages/1510028723858968618"

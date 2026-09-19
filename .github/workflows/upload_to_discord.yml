@@ -36,10 +36,13 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
+          FILES=(-F "file1=@Assembly-CSharp.dll")
+          if [ -f Assembly-CSharp.pdb ]; then
+            FILES+=(-F "file2=@Assembly-CSharp.pdb")
+          fi
           RESPONSE=$(curl -s -X POST "${DISCORD_WEBHOOK}?wait=true" \
             -F "payload_json={\"content\":\"📦 **Bongo Cat 最新版自動領取腳本來囉！**\n直接點擊下方檔案下載覆蓋即可 👇\"}" \
-            -F "file1=@Assembly-CSharp.dll" \
-            -F "file2=@Assembly-CSharp.pdb")
+            "${FILES[@]}")
           echo "msg_id=$(echo "$RESPONSE" | jq -r '.id')" >> $GITHUB_OUTPUT
 
       - name: 🗑️ 刪除舊的更新資訊訊息

@@ -20,7 +20,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .msg_ids
-          key: discord-msg-ids
+          key: discord-msg-ids-${{ github.run_id }}
+          restore-keys: |
+            discord-msg-ids-
 
       - name: 🗑️ 刪除舊的檔案訊息
         env:
@@ -84,4 +86,4 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: .msg_ids
-          key: discord-msg-ids
+          key: discord-msg-ids-${{ github.run_id }}

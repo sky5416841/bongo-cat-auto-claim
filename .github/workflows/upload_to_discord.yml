@@ -47,15 +47,6 @@ jobs:
             "${FILES[@]}")
           echo "msg_id=$(echo "$RESPONSE" | jq -r '.id')" >> $GITHUB_OUTPUT
 
-      - name: 🗑️ 刪除舊的更新資訊訊息
-        env:
-          DISCORD_WEBHOOK_NEWS: ${{ secrets.DISCORD_WEBHOOK_NEWS }}
-        run: |
-          if [ -f .msg_ids/news_msg_id ]; then
-            OLD_ID=$(cat .msg_ids/news_msg_id)
-            curl -s -X DELETE "${DISCORD_WEBHOOK_NEWS}/messages/${OLD_ID}"
-          fi
-
       - name: 📢 發送更新資訊
         id: send_news
         env:
@@ -80,7 +71,6 @@ jobs:
         run: |
           mkdir -p .msg_ids
           echo "${{ steps.send_file.outputs.msg_id }}" > .msg_ids/file_msg_id
-          echo "${{ steps.send_news.outputs.msg_id }}" > .msg_ids/news_msg_id
 
       - name: 🗄️ 更新快取
         uses: actions/cache/save@v4
